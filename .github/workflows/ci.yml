@@ -1,0 +1,42 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout code
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Set up JDK
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # Build with Maven
+      - name: Build with Maven
+        run: mvn clean install
+
+      # Run tests
+      - name: Run tests
+        run: mvn test
+
+      # Build Docker image
+      - name: Build Docker image
+        run: docker build -t ai-bug-tracker .
+
+      # Push Docker image to GitHub Container Registry
+      - name: Push Docker image
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          docker tag ai-bug-tracker ghcr.io/${{ github.repository_owner }}/ai-bug-tracker:latest
+          docker push ghcr.io/${{ github.repository_owner }}/ai-bug-tracker:latest
