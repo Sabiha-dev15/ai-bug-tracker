@@ -34,4 +34,9 @@ public class BugController {
     public String analyze(@RequestBody BugRequest request) {
         return aiService.analyzeIssue(request.getDescription());
     }
+
+    @GetMapping("/health")
+    public String health() {
+        return "OK";
+    }
 }
